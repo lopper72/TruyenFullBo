@@ -7,6 +7,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -29,17 +30,31 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Tủ Truyện',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="story-collection"
         options={{
-          title: 'Explore',
+          title: 'Khám Phá',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="ranking"
+        options={{
+          title: 'Xếp Hạng',
+          tabBarIcon: ({ color }) => <Icon size={28} name="bar-chart" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: 'Tài Khoản',
+          tabBarIcon: ({ color }) => <Icon size={28} name="person" color={color} />,
+        }}
+      />  
     </Tabs>
   );
 }

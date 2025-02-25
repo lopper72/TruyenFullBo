@@ -19,8 +19,8 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/material-top-tabs": "^7.1.0",
     "@react-navigation/native": "^7.0.14",
-    "@types/axios": "^0.14.4",
     "@types/cheerio": "^0.22.35",
+    "@types/node": "^22.13.5",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0-rc.12",
     "expo": "~52.0.37",
@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/axios": "^0.14.4",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-native": "^0.73.0",

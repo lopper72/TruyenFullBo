@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import axios from 'axios';
 import cheerio from 'react-native-cheerio';      // Đảm bảo bạn import đúng
+
+type RootStackParamList = {
+  'story-detail': { urlStory: string };
+};
 
 const getUpdateStory = (url: string) => {
   return new Promise((resolve, reject) => {
@@ -42,12 +47,14 @@ const url = 'https://truyenfull.vision/danh-sach/truyen-moi/';
 
 const NewStory = () => {
   const [stories, setStories] = useState<Story[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await getUpdateStory(url);
-      console.log(data); // Dump giá trị trả về data
+      //console.log(data); // Dump giá trị trả về data
       setStories(data as Story[]);
+       console.log(stories);
     };
 
     fetchData();
@@ -58,7 +65,12 @@ const NewStory = () => {
         <FlatList
           data={stories}
           renderItem={({ item }) => (
-            <View style={styles.storyItem}>
+            <View style={styles.storyItem} onTouchEnd={() => 
+              router.push({
+                pathname: "/StoryDetail",
+                params: { urlStory: item.urlStory }
+              })
+            }>
               <View style={styles.imageContainer}>
                 <Image source={{ uri: item.imgStory }} style={styles.storyImage} />
                 <View style={styles.textContainer}>
@@ -68,7 +80,6 @@ const NewStory = () => {
                   <Text style={styles.chapterText}>{item.chapterText}</Text> 
                 </View>
               </View>
-              
             </View>
           )}
           keyExtractor={(_, index) => index.toString()}

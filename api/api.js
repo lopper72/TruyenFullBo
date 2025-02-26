@@ -1,4 +1,5 @@
-import cheerio from 'cheerio-without-node-native';
+import axios from 'axios';
+import cheerio from 'react-native-cheerio';      // Đảm bảo bạn import đúng
 
 // Hàm lấy truyện vừa cập nhật
 // @params:

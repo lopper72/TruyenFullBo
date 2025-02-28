@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
-import { useSearchParams } from 'expo-router/build/hooks';
+import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, ScrollView, TouchableOpacity } from 'react-native';
+import { useSearchParams, useRouter } from 'expo-router/build/hooks';
 import {getInfoChapter, getUpdateStory} from '../api/api';
 import RenderHTML from 'react-native-render-html';
 
@@ -15,41 +15,97 @@ interface Story {
 export default function StoryContentScreen() {
   const { width } = useWindowDimensions();
   const [story, setStory] = useState<Story | null>(null);
-
+  const router = useRouter();
   const url = useSearchParams();
-  const urlStory = url.get('url'); 
+  const initialUrl = url.get('url');
+  const [currentUrl, setCurrentUrl] = useState<string | null>(initialUrl);
+
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const data = await getInfoChapter(urlStory);
-        console.log('Fetched data:', data); // Log dữ liệu đã lấy
-        setStory(data as Story);
-      } catch (error) {
-        console.error('Error fetching story:', error); // Log lỗi nếu có
+      if (currentUrl) {
+        try {
+          const data = await getInfoChapter(currentUrl);
+          console.log('Fetched data:', data);
+          setStory(data as Story);
+        } catch (error) {
+          console.error('Error fetching story:', error);
+        }
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentUrl]);
 
   useEffect(() => {
     console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
   }, [story]); // Theo dõi sự thay đổi của story
   
+  const handlePreviousPage = () => {
+    if (story?.chapter_prev) {
+      console.log('Navigating to previous chapter:', story.chapter_prev);
+      setCurrentUrl(story.chapter_prev); // Cập nhật state với chapter_prev
+    } else {
+      console.log('No previous chapter available');
+    }
+  };
+
+  const handleNextPage = () => {
+    if (story?.chapter_next) {
+      console.log('Navigating to next chapter:', story.chapter_next);
+      setCurrentUrl(story.chapter_next); // Cập nhật state với chapter_next
+    } else {
+      console.log('No next chapter available');
+    }
+  };
+
   return (
     <View style={styles.container}>
       {story ? (
         <ScrollView>
+          <View style={styles.navigationButtons}>
+          <TouchableOpacity 
+            style={[styles.button, !story?.chapter_prev && styles.disabledButton]} 
+            onPress={story?.chapter_prev ? handlePreviousPage : undefined}
+            disabled={!story?.chapter_prev}
+          >
+            <Text style={styles.buttonText}>Trang trước</Text>
+          </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, !story?.chapter_next && styles.disabledButton]} 
+              onPress={story?.chapter_next ? handleNextPage : undefined}
+              disabled={!story?.chapter_next}
+            >
+              <Text style={styles.buttonText}>Trang sau</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.storyItem}>
             <View style={styles.imageContainer}>
               <Text style={styles.storyTitle}>{story.nameStory}</Text>
               <Text style={styles.chapterText}>Chapter: {story.chapter}</Text>
             
-              <RenderHTML
-                  contentWidth={width} // Đảm bảo bạn có chiều rộng của container
-                  source={{ html: story.content }} // Chuyển đổi HTML thành văn bản
+              <View style={{ maxWidth: width }}>
+                <RenderHTML
+                    contentWidth={width} // Đảm bảo bạn có chiều rộng của container
+                    source={{ html: story.content }} // Chuyển đổi HTML thành văn bản
                 />    
+              </View>
             </View>
+          </View>
+          <View style={styles.navigationButtons}>
+          <TouchableOpacity 
+            style={[styles.button, !story?.chapter_prev && styles.disabledButton]} 
+            onPress={story?.chapter_prev ? handlePreviousPage : undefined}
+            disabled={!story?.chapter_prev}
+          >
+            <Text style={styles.buttonText}>Trang trước</Text>
+          </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, !story?.chapter_next && styles.disabledButton]} 
+              onPress={story?.chapter_next ? handleNextPage : undefined}
+              disabled={!story?.chapter_next}
+            >
+              <Text style={styles.buttonText}>Trang sau</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       ) : (
@@ -127,5 +183,25 @@ const styles = StyleSheet.create({
   },
   urlText: {
     fontSize: 15,
+  },
+  navigationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 20,
+  },
+  button: {
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    padding: 10,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
 });

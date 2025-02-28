@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, Button } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, Button,ScrollView } from 'react-native';
 import { useSearchParams } from 'expo-router/build/hooks';
 import {getInfoStory, getUpdateStory} from '../api/api';
 import RenderHTML from 'react-native-render-html';
@@ -28,7 +28,7 @@ export default function StoryDetailScreen() {
     const fetchData = async () => {
       try {
         const data = await getInfoStory(urlStory);
-        console.log('Fetched data:', data); // Log dữ liệu đã lấy
+
         setStory(data as Story);
       } catch (error) {
         console.error('Error fetching story:', error); // Log lỗi nếu có
@@ -39,11 +39,11 @@ export default function StoryDetailScreen() {
   }, []);
 
   useEffect(() => {
-    console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
+    //console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
   }, [story]); // Theo dõi sự thay đổi của story
   
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {story ? (
         <View style={styles.storyItem}>
           <View style={styles.imageContainer}>
@@ -70,7 +70,7 @@ export default function StoryDetailScreen() {
       ) : (
         <Text>Loading...</Text>
       )}
-    </View>
+    </ScrollView>
   );
 };
 

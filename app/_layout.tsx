@@ -1,3 +1,4 @@
+import React from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -10,6 +11,7 @@ import { AuthProvider } from '@/hooks/auth-context'; // Only import AuthProvider
 import { Searchbar } from 'react-native-paper';
 import { TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { NavigationContainer } from '@react-navigation/native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,26 +41,21 @@ export default function RootLayout() {
 
     return (
         <AuthProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <SafeAreaView style={styles.safeArea}>
-                    <Searchbar
-                        placeholder="Tìm kiếm..."
-                        onChangeText={setSearchQuery}
-                        value={searchQuery}
-                        onIconPress={onSearch}
-                        style={[styles.searchbar, { textAlign: 'center' }]}
-                    />
-                    <TouchableOpacity onPress={() => {/* Điều hướng đến màn hình cài đặt */}} style={styles.settingsButton}>
-                        <Ionicons name="settings" size={24} color="black" />
-                    </TouchableOpacity>
+            <ThemeProvider value={colorScheme === 'light' ? DefaultTheme : DarkTheme}>
+ 
                     <Stack initialRouteName="(tabs)">
-                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                        <Stack.Screen 
+                            name="(tabs)" 
+                            options={{ 
+                                headerShown: false
+                            }} 
+                        />
                         <Stack.Screen name="+not-found" />
                         <Stack.Screen name="StoryDetail" options={{ headerTitle: 'Thông Tin Truyện' }} />
                         <Stack.Screen name="StoryContent" options={{ headerTitle: 'Truyện' }} />
                     </Stack>
                     <StatusBar style="auto" />
-                </SafeAreaView>
+
             </ThemeProvider>
         </AuthProvider>
     );

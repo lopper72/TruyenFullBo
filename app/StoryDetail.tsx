@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, Button,ScrollView, TouchableOpacity } from 'react-native';
-import { useSearchParams } from 'expo-router/build/hooks';
+import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, Button,ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import {getInfoStory, getAllChapters} from '../api/api';
 import RenderHTML from 'react-native-render-html';
 import { useRouter } from 'expo-router';
@@ -27,44 +27,30 @@ export default function StoryDetailScreen() {
   const scrollViewRef = useRef<ScrollView>(null); // Create a ref for the ScrollView
   const [showScrollToTop, setShowScrollToTop] = useState(false); // State to manage scroll to top button visibility
 
-  const url = useSearchParams();
-  const urlStory = url.get('urlStory') || ''; // Default to an empty string if urlStory is null
+  const url = useLocalSearchParams();
+  const urlStory = Array.isArray(url.urlStory) ? url.urlStory[0] : url.urlStory || '';
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getInfoStory(urlStory);
-
         setStory(data as Story);
+
+        const chapterData = await getAllChapters(data.truyenID, urlStory);
+        setChapters(chapterData);
       } catch (error) {
-        console.error('Error fetching story:', error); // Log lỗi nếu có
+        console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [urlStory]); // Thêm urlStory vào dependency array
 
   useEffect(() => {
     console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
   }, [story]); // Theo dõi sự thay đổi của story
   
   const [chapters, setChapters] = useState<{ chapter: string; urlChapter: string }[]>([]); // State to hold chapters
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getInfoStory(urlStory);
-        setStory(data as Story);
-
-        // Fetch chapters after story data is retrieved
-        const chapterData = await getAllChapters(data.truyenID, urlStory);
-        setChapters(chapterData); // Set chapters state
-      } catch (error) {
-        console.error('Error fetching story:', error); // Log lỗi nếu có
-      }
-    };
-
-    fetchData();
-  }, []);
 
   // Function to scroll to the top
   const scrollToTop = () => {
@@ -130,11 +116,13 @@ export default function StoryDetailScreen() {
           </View>
         </View>
       ) : (
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#FF6347" />
       )}
       <View style={styles.chapterList}>
         <Text style={styles.title}>Danh sách chương:</Text>
-        {showMoreChapters ? (
+        {chapters.length === 0 ? (
+          <ActivityIndicator size="small" color="#FF6347" />
+        ) : showMoreChapters ? (
           chapters.map((chapter, index) => (
             <TouchableOpacity 
               key={index} 

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, useWindowDimensions, ScrollView, TouchableOpacity } from 'react-native';
-import { useSearchParams, useRouter } from 'expo-router/build/hooks';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {getInfoChapter, getUpdateStory} from '../api/api';
 import RenderHTML from 'react-native-render-html';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Story {
         chapter: '',
@@ -16,8 +17,8 @@ export default function StoryContentScreen() {
   const { width } = useWindowDimensions();
   const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
-  const url = useSearchParams();
-  const initialUrl = url.get('url');
+  const url = useLocalSearchParams();
+  const initialUrl = Array.isArray(url.url) ? url.url[0] : url.url || '';
   const [currentUrl, setCurrentUrl] = useState<string | null>(initialUrl);
 
   useEffect(() => {
@@ -25,8 +26,31 @@ export default function StoryContentScreen() {
       if (currentUrl) {
         try {
           const data = await getInfoChapter(currentUrl);
-          console.log('Fetched data:', data);
           setStory(data as Story);
+          
+          // Lưu vào lịch sử đọc
+          const historyEntry = {
+            storyId: currentUrl,
+            storyName: data.nameStory,
+            chapter: data.chapter,
+            timestamp: new Date().getTime()
+          };
+
+          const existingHistory = await AsyncStorage.getItem('readingHistory');
+          let historyArray = existingHistory ? JSON.parse(existingHistory) : [];
+          
+          // Cập nhật điều kiện kiểm tra theo storyId
+          const existingIndex = historyArray.findIndex((item: any) => 
+            item.storyName === data.nameStory
+          );
+          if (existingIndex !== -1) {
+            historyArray.splice(existingIndex, 1);
+          }
+          
+          historyArray.unshift(historyEntry);
+          // Giới hạn lịch sử 50 item gần nhất
+          historyArray = historyArray.slice(0, 50);
+          await AsyncStorage.setItem('readingHistory', JSON.stringify(historyArray));
         } catch (error) {
           console.error('Error fetching story:', error);
         }
@@ -37,24 +61,18 @@ export default function StoryContentScreen() {
   }, [currentUrl]);
 
   useEffect(() => {
-    console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
+    //console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
   }, [story]); // Theo dõi sự thay đổi của story
   
   const handlePreviousPage = () => {
     if (story?.chapter_prev) {
-      console.log('Navigating to previous chapter:', story.chapter_prev);
-      setCurrentUrl(story.chapter_prev); // Cập nhật state với chapter_prev
-    } else {
-      console.log('No previous chapter available');
+        setCurrentUrl(story.chapter_prev);
     }
   };
 
   const handleNextPage = () => {
     if (story?.chapter_next) {
-      console.log('Navigating to next chapter:', story.chapter_next);
-      setCurrentUrl(story.chapter_next); // Cập nhật state với chapter_next
-    } else {
-      console.log('No next chapter available');
+        setCurrentUrl(story.chapter_next);
     }
   };
 
@@ -85,8 +103,37 @@ export default function StoryContentScreen() {
             
               <View style={{ maxWidth: width }}>
                 <RenderHTML
-                    contentWidth={width} // Đảm bảo bạn có chiều rộng của container
-                    source={{ html: story.content }} // Chuyển đổi HTML thành văn bản
+                    contentWidth={width}
+                    source={{ html: story.content }}
+                    baseStyle={{ 
+                      fontSize: 20,
+                      lineHeight: 28,
+                      paddingHorizontal: 8,
+                      fontFamily: 'System',
+                      fontWeight: 'normal',
+                    }}
+                    tagsStyles={{
+                      p: {
+                        marginVertical: 12,
+                        fontSize: 20,
+                        lineHeight: 28,
+                      },
+                      span: {
+                        fontSize: 20,
+                        lineHeight: 28,
+                      },
+                      div: {
+                        fontSize: 20,
+                        lineHeight: 28,
+                      },
+                    }}
+                    defaultTextProps={{
+                      style: {
+                        fontSize: 20,
+                        lineHeight: 28,
+                        color: '#333',
+                      }
+                    }}
                 />    
               </View>
             </View>

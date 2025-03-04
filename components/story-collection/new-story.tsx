@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import axios from 'axios';
@@ -47,21 +47,33 @@ const url = 'https://truyenfull.vision/danh-sach/truyen-moi/';
 
 const NewStory = () => {
   const [stories, setStories] = useState<Story[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getUpdateStory(url);
-      //console.log(data); // Dump giá trị trả về data
-      setStories(data as Story[]);
-       console.log(stories);
+      try {
+        setIsLoading(true);
+        const data = await getUpdateStory(url);
+        setStories(data as Story[]);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchData();
   }, []);
+
   return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Mới nhất</Text>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Mới nhất</Text>
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
         <FlatList
           data={stories}
           renderItem={({ item }) => (
@@ -86,7 +98,8 @@ const NewStory = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
         />
-      </View>
+      )}
+    </View>
   );
 };
 

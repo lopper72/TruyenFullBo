@@ -4,6 +4,8 @@ import { useLocalSearchParams } from 'expo-router';
 import {getInfoStory, getAllChapters} from '../api/api';
 import RenderHTML from 'react-native-render-html';
 import { useRouter } from 'expo-router';
+import { AntDesign } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Story {
   author: string;
@@ -26,6 +28,7 @@ export default function StoryDetailScreen() {
   const [showMoreChapters, setShowMoreChapters] = useState(false); // State to manage chapter visibility
   const scrollViewRef = useRef<ScrollView>(null); // Create a ref for the ScrollView
   const [showScrollToTop, setShowScrollToTop] = useState(false); // State to manage scroll to top button visibility
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const url = useLocalSearchParams();
   const urlStory = Array.isArray(url.urlStory) ? url.urlStory[0] : url.urlStory || '';
@@ -47,10 +50,44 @@ export default function StoryDetailScreen() {
   }, [urlStory]); // Thêm urlStory vào dependency array
 
   useEffect(() => {
-    console.log('Story updated:', story); // Log giá trị story khi nó thay đổi
+
   }, [story]); // Theo dõi sự thay đổi của story
   
   const [chapters, setChapters] = useState<{ chapter: string; urlChapter: string }[]>([]); // State to hold chapters
+
+  // Kiểm tra bookmark khi load
+  useEffect(() => {
+    const checkBookmark = async () => {
+      const bookmarks = await AsyncStorage.getItem('bookmarks');
+      if (bookmarks) {
+        const parsed = JSON.parse(bookmarks);
+        setIsBookmarked(parsed.some((b: any) => b.truyenID === story?.truyenID));
+      }
+    };
+    if (story) checkBookmark();
+  }, [story]);
+
+  // Hàm xử lý bookmark
+  const toggleBookmark = async () => {
+    if (!story) return;
+    
+    const bookmarks = await AsyncStorage.getItem('bookmarks');
+    let newBookmarks = bookmarks ? JSON.parse(bookmarks) : [];
+    
+    if (isBookmarked) {
+      newBookmarks = newBookmarks.filter((b: any) => b.truyenID !== story.truyenID);
+    } else {
+      newBookmarks.push({
+        truyenID: story.truyenID,
+        name: story.name,
+        imgStory: story.imgStory,
+        urlStory: urlStory
+      });
+    }
+    
+    await AsyncStorage.setItem('bookmarks', JSON.stringify(newBookmarks));
+    setIsBookmarked(!isBookmarked);
+  };
 
   // Function to scroll to the top
   const scrollToTop = () => {
@@ -81,10 +118,17 @@ export default function StoryDetailScreen() {
             <View style={styles.imageButtonContainer}>
               <Image source={{ uri: story.imgStory }} style={styles.storyImage} />
               <View style={styles.buttonContainer}>
+                <AntDesign
+                  name={isBookmarked ? "heart" : "hearto"}
+                  size={24}
+                  color="#FF6347"
+                  style={styles.bookmarkIcon}
+                  onPress={toggleBookmark}
+                />
                 <Button 
-                    title="Đọc chương đầu" 
-                    onPress={() => router.push({ pathname: '/StoryContent', params: { url: story.urlFirstChapter } })}
-                    color="#FF6347" // Set a bright color for the button
+                  title="Đọc chương đầu" 
+                  onPress={() => router.push({ pathname: '/StoryContent', params: { url: story.urlFirstChapter } })}
+                  color="#FF6347" // Set a bright color for the button
                 />
               </View>
             </View>
@@ -292,5 +336,9 @@ const styles = StyleSheet.create({
   scrollToTopText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  bookmarkIcon: {
+    marginBottom: 10,
+    alignSelf: 'center',
   },
 });

@@ -32,10 +32,8 @@ export default function TabLayout() {
     try {
       setIsLoading(true);
       setError(null);
-    console.log('vao');
       // Gọi API search
       const data = await getStoriesBySearch(searchQuery);
-      console.log(data);
       
       setResults(data || []); // API trả về array trực tiếp, không có field 'items'
       setShowResults(true);

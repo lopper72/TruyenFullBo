@@ -49,6 +49,14 @@
       "eas": {
         "projectId": "42161c2b-874a-40a1-a212-664654f9d232"
       }
-    }
+    },
+    "splash": {
+      "image": "./assets/images/logoapp.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ]
   }
 }

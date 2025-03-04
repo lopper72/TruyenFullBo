@@ -25,14 +25,12 @@ const CategoryScreen = () => {
     const fetchData = async () => {
       try {
         const data = await getAllCategories(url);
-        console.log('Fetched data:', JSON.stringify(data, null, 2));  // Modified log
         setStories(data as category[]);
       } catch (error) {
         console.error('Fetch error:', error);  // Add error handling
       }
     };
 
-    console.log('Component mounted');  // Test if useEffect runs
     fetchData();
   }, []);
   

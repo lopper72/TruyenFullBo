@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { getStoriesByCategory } from '../api/api';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 
 interface Story {
   rowStories: string;
@@ -14,6 +14,7 @@ interface Story {
 
 const ListStoryByCategoryScreen = () => {
   const params = useLocalSearchParams();
+  const navigation = useNavigation();
   const url = params.url;
   const name = params.name;
   const [stories, setStories] = useState<Story[]>([]);
@@ -27,7 +28,7 @@ const ListStoryByCategoryScreen = () => {
         if (!url) return;
         
         const data = await getStoriesByCategory(url);
-        console.log(data);
+
         setStories(data);
       } catch (err) {
         setError('Không thể tải danh sách truyện');
@@ -39,6 +40,17 @@ const ListStoryByCategoryScreen = () => {
 
     fetchStories();
   }, [url]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: `Thể Loại: ${name || ''}`,
+      headerTitleStyle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#2d2d2d'
+      }
+    });
+  }, [name, navigation]);
 
   if (loading) {
     return (
@@ -65,25 +77,29 @@ const ListStoryByCategoryScreen = () => {
       <FlatList
         data={stories}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={styles.storyItem}
-            onPress={() => router.push({
-              pathname: '/StoryDetail',
-              params: { urlStory: item.urlStory }
-            })}
-          >
-            <Image 
-              source={{ uri: item.imgStory }} 
-              style={styles.thumbnail}
-              resizeMode="cover"
-            />
-            <View style={styles.infoContainer}>
-              <Text style={styles.title}>{item.nameStory}</Text>
-              {item.rowStories && <Text style={styles.author}>{item.rowStories}</Text>}
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          if (!item.nameStory) return null;
+          
+          return (
+            <TouchableOpacity 
+              style={styles.storyItem}
+              onPress={() => router.push({
+                pathname: '/StoryDetail',
+                params: { urlStory: item.urlStory }
+              })}
+            >
+              <Image 
+                source={{ uri: item.imgStory }} 
+                style={styles.thumbnail}
+                resizeMode="cover"
+              />
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>{item.nameStory}</Text>
+                {item.rowStories && <Text style={styles.author}>{item.rowStories}</Text>}
+              </View>
+            </TouchableOpacity>
+          )
+        }}
         keyExtractor={(item) => item.urlStory || ''}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
@@ -151,15 +167,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#dee2e6',
     marginVertical: 8,
   },
-});
-
-ListStoryByCategoryScreen.options = (params: any) => ({
-  headerTitle: `Thể Loại: ${params.name || ''}`,
-  headerTitleStyle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2d2d2d'
-  }
 });
 
 export default ListStoryByCategoryScreen; 

@@ -9,12 +9,23 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/hooks/auth-context'; // Only import AuthProvider here
 import { Searchbar } from 'react-native-paper';
-import { TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
+import { TouchableOpacity, SafeAreaView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+const WhiteTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#ffffff', // Màu nền trắng
+    text: '#333333', // Màu chữ đậm
+    card: '#f5f5f5', // Màu nền header
+    border: '#e0e0e0', // Màu viền
+  },
+};
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
@@ -41,8 +52,8 @@ export default function RootLayout() {
 
     return (
         <AuthProvider>
-            <ThemeProvider value={colorScheme === 'light' ? DefaultTheme : DarkTheme}>
- 
+            <ThemeProvider value={WhiteTheme}>
+                <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
                     <Stack initialRouteName="(tabs)">
                         <Stack.Screen 
                             name="(tabs)" 
@@ -55,8 +66,8 @@ export default function RootLayout() {
                         <Stack.Screen name="StoryContent" options={{ headerTitle: 'Truyện' }} />
                         <Stack.Screen name="ListStoryByCategory" options={{ headerTitle: 'Thể Loại' }} />
                     </Stack>
-                    <StatusBar style="auto" />
-
+                    <StatusBar style="dark" />
+                </View>
             </ThemeProvider>
         </AuthProvider>
     );

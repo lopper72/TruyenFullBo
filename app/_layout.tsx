@@ -53,6 +53,7 @@ export default function RootLayout() {
                         <Stack.Screen name="+not-found" />
                         <Stack.Screen name="StoryDetail" options={{ headerTitle: 'Thông Tin Truyện' }} />
                         <Stack.Screen name="StoryContent" options={{ headerTitle: 'Truyện' }} />
+                        <Stack.Screen name="ListStoryByCategory" options={{ headerTitle: 'Thể Loại' }} />
                     </Stack>
                     <StatusBar style="auto" />
 

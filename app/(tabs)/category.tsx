@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
+import { Link } from 'expo-router';
 
 import axios from 'axios';
 import cheerio from 'react-native-cheerio';      // Đảm bảo bạn import đúng
@@ -15,7 +16,7 @@ interface category {
   count?: number;
 }
 
-const url = 'https://truyenfull.vision';
+const url = 'https://truyenfull.vision';  
 
 const CategoryScreen = () => {
   const [stories, setStories] = useState<category[]>([]);
@@ -40,10 +41,25 @@ const CategoryScreen = () => {
       <Text style={styles.title}>Thể Loại</Text>
       <FlatList
         data={stories}
-        renderItem={({ item, index }) => (
-          <Text key={index} style={styles.story}>{item.name}</Text>
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => (
+          <Link href={{ 
+            pathname: "/ListStoryByCategory", 
+            params: { 
+              url: item.url,
+              name: item.name
+            } 
+          }} asChild>
+            <TouchableOpacity>
+              <View style={styles.itemContainer}>
+                <Text style={styles.storyName}>{item.name}</Text>
+                {item.count && <Text style={styles.storyCount}>{item.count} truyện</Text>}
+              </View>
+            </TouchableOpacity>
+          </Link>
         )}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.slug || item.name}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
@@ -52,20 +68,39 @@ const CategoryScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
+    fontWeight: '800',
+    color: '#2d2d2d',
+    marginVertical: 20,
+    alignSelf: 'flex-start',
   },
-  story: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 10,
+  listContent: {
+    paddingBottom: 20,
+  },
+  itemContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  storyName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 4,
+  },
+  storyCount: {
+    fontSize: 14,
+    color: '#6c757d',
   },
 });
 
